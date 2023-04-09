@@ -16,7 +16,7 @@ namespace UI.Movies
         public Command<long> BuyAdultTicketCommand { get; }
         public Command<long> BuyChildTicketCommand { get; }
         public Command<long> BuyCDCommand { get; }
-        public IReadOnlyList<Movie> Movies { get; private set; }
+        public IReadOnlyList<MovieDto> Movies { get; private set; }
 
         public bool ForKidsOnly { get; set; }
         public double MinimumRating { get; set; }
@@ -41,8 +41,8 @@ namespace UI.Movies
             }
 
             Movie movie = movieOrNothing.Value;
-            var specification = new GenericSpecification<Movie>(Movie.HasCDVersion);
-            if (specification.IsSatisfiedBy(movie))
+            var spec = new AvailableOnCDSpecification();
+            if (spec.IsSatisfiedBy(movie))
             {
                 MessageBox.Show("The movie doesn't have a CD version", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -59,9 +59,8 @@ namespace UI.Movies
             }
 
             Movie movie = movieOrNothing.Value;
-            var isSuitableForChildren = Movie.IsSuitableForChildren.Compile();
-            var specification = new GenericSpecification<Movie>(Movie.IsSuitableForChildren);
-            if (!specification.IsSatisfiedBy(movie))
+            var spec = new MovieForKidsSpecification();
+            if (!spec.IsSatisfiedBy(movie))
             {
                 MessageBox.Show("The movie is not suitable for children", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -76,16 +75,20 @@ namespace UI.Movies
 
         private void Search()
         {
-            //var expression = ForKidsOnly ? Movie.IsSuitableForChildren: x => true;
-            //var expression = OnCD ? Movie.HasCDVersion : x => true;
-            
-            var specification = new GenericSpecification<Movie>(Movie.HasCDVersion);
+            //Specification<Movie> spec = Specification<Movie>.All;
 
-            _repository.Find()
-                .Where(x => x.MpaaRating <= MpaaRating.PG || ForKidsOnly)
-                .Where(x => x.ReleaseDate <= DateTime.Now.AddMonths(-6) || !OnCD)
-                .ToList();
-            Movies = _repository.GetList(specification);
+            //if (ForKidsOnly)
+            //{
+            //    spec = spec.And(new MovieForKidsSpecification());
+            //}
+            //if (OnCD)
+            //{
+            //    spec = spec.And(new AvailableOnCDSpecification());
+            //}
+
+            var spec = new MovieDirectedBySpecification("Bill Condon");
+            Movies = _repository.GetList(spec, MinimumRating);
+
             Notify(nameof(Movies));
         }
     }

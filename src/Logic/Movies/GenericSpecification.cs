@@ -1,10 +1,6 @@
 ﻿using NHibernate.Criterion;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Logic.Movies
 {
@@ -12,7 +8,7 @@ namespace Logic.Movies
     {
         public Expression<Func<T, bool>> Expression { get; }
 
-        public GenericSpecification(Expression<Func<T,bool>> expression)
+        public GenericSpecification(Expression<Func<T, bool>> expression)
         {
             Expression = expression;
         }
